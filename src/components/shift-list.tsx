@@ -2,10 +2,24 @@
 
 import type { Shift } from '@/lib/definitions';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { deleteShiftAction } from '@/lib/actions';
-import { Phone, CheckCircle, User, Clock, MapPin, FileText, Star } from 'lucide-react';
+import {
+  Phone,
+  CheckCircle,
+  User,
+  Clock,
+  MapPin,
+  FileText,
+  Star,
+} from 'lucide-react';
 import { useFormStatus } from 'react-dom';
 import { useActionState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -39,10 +53,17 @@ function DeleteButton({ shiftId }: { shiftId: string }) {
   );
 }
 
-export default function ShiftList({ shifts, userId, onActionSuccess }: ShiftListProps) {
+export default function ShiftList({
+  shifts,
+  userId,
+  onActionSuccess,
+}: ShiftListProps) {
   const { toast } = useToast();
 
-  const [state, formAction] = useActionState(deleteShiftAction, { message: '', error: undefined });
+  const [state, formAction] = useActionState(deleteShiftAction, {
+    message: '',
+    error: undefined,
+  });
 
   useEffect(() => {
     if (state?.message && !state.error) {
@@ -60,7 +81,7 @@ export default function ShiftList({ shifts, userId, onActionSuccess }: ShiftList
       });
     }
   }, [state, toast, onActionSuccess]);
-  
+
   if (shifts.length === 0) {
     return null;
   }
@@ -72,43 +93,45 @@ export default function ShiftList({ shifts, userId, onActionSuccess }: ShiftList
         const whatsappNumber = shift.phone.replace(/[^0-9]/g, '');
 
         return (
-          <Card key={shift.id} className={cn('transition-all', isOwner && 'ring-2 ring-primary border-primary bg-primary/5')}>
+          <Card
+            key={shift.id}
+            className={cn(
+              'transition-all',
+              isOwner &&
+                'ring-2 ring-primary border-primary bg-primary/5 dark:bg-primary/10'
+            )}
+          >
             <CardHeader className="p-4">
               <div className="flex justify-between items-start">
-                <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-primary" /> {shift.location}
+                <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground/90">
+                  <MapPin className="w-4 h-4 text-primary" />{' '}
+                  <span className={cn(isOwner && 'text-primary font-semibold')}>
+                    {shift.location} ({shift.name})
+                  </span>
                 </CardTitle>
-                {isOwner ? (
+                {isOwner && (
                   <Badge variant="default" className="flex items-center gap-1.5">
                     <Star className="w-3.5 h-3.5" />
                     Mi Guardia
                   </Badge>
-                ) : (
-                  <Badge variant="secondary">{shift.name}</Badge>
                 )}
               </div>
             </CardHeader>
             <CardContent className="p-4 pt-0 space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Clock className="w-4 h-4"/>
-                    <span>{shift.time}</span>
+              <div className="flex items-center gap-2 text-foreground/80 font-medium">
+                <Clock className="w-4 h-4 text-primary/80" />
+                <span>{shift.time}</span>
+              </div>
+              <div className="flex items-center gap-2 text-foreground/80 font-medium">
+                <Phone className="w-4 h-4 text-primary/80" />
+                <span>{shift.phone}</span>
+              </div>
+              {shift.notes && (
+                <div className="flex items-start gap-2 text-foreground/70 pt-2">
+                  <FileText className="w-4 h-4 mt-0.5 shrink-0 text-primary/80" />
+                  <p className="italic">"{shift.notes}"</p>
                 </div>
-                <div className={cn("flex items-center gap-2 text-muted-foreground", isOwner && "text-primary font-semibold")}>
-                    <User className="w-4 h-4"/>
-                    <span className={isOwner ? 'text-lg' : ''}>
-                      {isOwner ? `Publicado por: ${shift.name} (Tú)` : `Publicado por: ${shift.name}`}
-                    </span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Phone className="w-4 h-4"/>
-                    <span>{shift.phone}</span>
-                </div>
-                {shift.notes && (
-                    <div className="flex items-start gap-2 text-muted-foreground pt-2">
-                        <FileText className="w-4 h-4 mt-0.5 shrink-0"/>
-                        <p className="italic">"{shift.notes}"</p>
-                    </div>
-                )}
+              )}
             </CardContent>
             <CardFooter className="p-4 pt-0">
               {isOwner ? (
@@ -118,7 +141,11 @@ export default function ShiftList({ shifts, userId, onActionSuccess }: ShiftList
                 </form>
               ) : (
                 <Button asChild className="w-full whatsapp-btn hover:bg-[#20b757]">
-                  <a href={`https://wa.me/34${whatsappNumber}`} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={`https://wa.me/34${whatsappNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <Phone className="w-4 h-4 mr-2" />
                     Contactar por WhatsApp
                   </a>
