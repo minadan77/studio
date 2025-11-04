@@ -6,9 +6,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Badge } from '@/components/ui/badge';
 import { deleteShiftAction } from '@/lib/actions';
 import { Phone, CheckCircle, User, Clock, MapPin, FileText } from 'lucide-react';
-import { useFormStatus, useFormState } from 'react-dom';
-import { useEffect } from 'react';
+import { useFormStatus } from 'react-dom';
+import { useActionState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface ShiftListProps {
   shifts: Shift[];
@@ -39,7 +40,7 @@ function DeleteButton({ shiftId }: { shiftId: string }) {
 
 export default function ShiftList({ shifts, userId }: ShiftListProps) {
   const { toast } = useToast();
-  const [state, formAction] = useFormState(deleteShiftAction, { message: '' });
+  const [state, formAction] = useActionState(deleteShiftAction, { message: '' });
 
   useEffect(() => {
     if (state?.message) {
