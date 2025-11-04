@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "shift": {
+      "title": "Shift",
+      "description": "Represents a single nursing shift available for exchange.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who posted the shift."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the person posting the shift."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "The date of the shift in YYYY-MM-DD format."
+        },
+        "location": {
+          "type": "string",
+          "enum": ["C.S. Granadilla", "SNU San Isidro"],
+          "description": "The medical center where the shift is."
+        },
+        "time": {
+          "type": "string",
+          "enum": ["20h a 8h", "8h a 20h", "9h a 17h", "17h a 9h"],
+          "description": "The time slot of the shift."
+        },
+        "phone": {
+          "type": "string",
+          "description": "The contact phone number (for WhatsApp)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes about the shift exchange."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the shift was posted."
+        }
+      },
+      "required": ["userId", "name", "date", "location", "time", "phone", "createdAt"]
+    }
+  },
+  "auth": {
+    "providers": []
+  },
+  "firestore": {
+    "/shifts/{shiftId}": {
+      "schema": {
+        "$ref": "#/entities/shift"
+      },
+      "description": "Collection of all shifts available for exchange."
+    }
+  }
+}

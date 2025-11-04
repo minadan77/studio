@@ -9,3 +9,5 @@ export type Shift = {
   notes?: string;
   createdAt: Date;
 };
+
+export type NewShiftData = Omit<Shift, 'id' | 'createdAt'>;

@@ -1,12 +1,11 @@
 'use server';
 
 import { z } from 'zod';
-import { addShift, deleteShift, getShifts } from './data';
+import { addShift, deleteShift, canPublishShift } from './data';
 import { revalidatePath } from 'next/cache';
 
 const FormSchema = z.object({
-  id: z.string(),
-  name: z.string({ invalid_type_error: 'Please enter a name.' }).min(2, { message: 'El nombre es requerido.' }),
+  name: z.string().min(2, { message: 'El nombre es requerido.' }),
   location: z.enum(['C.S. Granadilla', 'SNU San Isidro'], {
     required_error: 'Debes seleccionar un lugar.',
   }),
@@ -17,10 +16,9 @@ const FormSchema = z.object({
   notes: z.string().max(200).optional(),
   date: z.string(),
   userId: z.string(),
-  createdAt: z.string(),
 });
 
-const AddShiftSchema = FormSchema.omit({ id: true, createdAt: true });
+const AddShiftSchema = FormSchema;
 
 export async function addShiftAction(data: z.infer<typeof AddShiftSchema>) {
   const validatedFields = AddShiftSchema.safeParse(data);
@@ -30,13 +28,11 @@ export async function addShiftAction(data: z.infer<typeof AddShiftSchema>) {
       error: 'Error de validación. Por favor, revisa los campos.',
     };
   }
-
+  
   const { date } = validatedFields.data;
 
-  // Check shift limit
-  const allShifts = await getShifts();
-  const shiftsOnDate = allShifts.filter((shift) => shift.date === date);
-  if (shiftsOnDate.length >= 2) {
+  const canPublish = await canPublishShift(date);
+  if (!canPublish) {
     return {
       error: 'Ya hay 2 guardias publicadas para este día. No se puede publicar más.',
     };
