@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { deleteShiftAction } from '@/lib/actions';
-import { Phone, CheckCircle, User, Clock, MapPin, FileText } from 'lucide-react';
+import { Phone, CheckCircle, User, Clock, MapPin, FileText, Star } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
 import { useActionState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -41,6 +41,7 @@ function DeleteButton({ shiftId }: { shiftId: string }) {
 
 export default function ShiftList({ shifts, userId, onActionSuccess }: ShiftListProps) {
   const { toast } = useToast();
+
   const [state, formAction] = useActionState(deleteShiftAction, { message: '', error: undefined });
 
   useEffect(() => {
@@ -71,14 +72,17 @@ export default function ShiftList({ shifts, userId, onActionSuccess }: ShiftList
         const whatsappNumber = shift.phone.replace(/[^0-9]/g, '');
 
         return (
-          <Card key={shift.id} className={cn(isOwner && 'bg-primary/5 border-primary/20')}>
+          <Card key={shift.id} className={cn('transition-all', isOwner && 'ring-2 ring-primary border-primary bg-primary/5')}>
             <CardHeader className="p-4">
               <div className="flex justify-between items-start">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-primary" /> {shift.location}
                 </CardTitle>
                 {isOwner ? (
-                  <Badge variant="default">Mi Guardia</Badge>
+                  <Badge variant="default" className="flex items-center gap-1.5">
+                    <Star className="w-3.5 h-3.5" />
+                    Mi Guardia
+                  </Badge>
                 ) : (
                   <Badge variant="secondary">{shift.name}</Badge>
                 )}
@@ -89,9 +93,11 @@ export default function ShiftList({ shifts, userId, onActionSuccess }: ShiftList
                     <Clock className="w-4 h-4"/>
                     <span>{shift.time}</span>
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
+                <div className={cn("flex items-center gap-2 text-muted-foreground", isOwner && "text-primary font-semibold")}>
                     <User className="w-4 h-4"/>
-                    <span>Publicado por: {shift.name}</span>
+                    <span className={isOwner ? 'text-lg' : ''}>
+                      {isOwner ? `Publicado por: ${shift.name} (Tú)` : `Publicado por: ${shift.name}`}
+                    </span>
                 </div>
                 {shift.notes && (
                     <div className="flex items-start gap-2 text-muted-foreground pt-2">

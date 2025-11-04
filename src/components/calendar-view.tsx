@@ -93,12 +93,13 @@ export default function CalendarView({ initialShifts, userId }: CalendarViewProp
             if (shift) {
               return (
                 <div key={shift.id} className="w-full bg-red-100/50 dark:bg-red-900/30 p-0.5 rounded-sm overflow-hidden">
+                  <p className="font-semibold text-red-800 dark:text-red-200 truncate">{shift.name}</p>
                   <p className="font-bold text-red-700 dark:text-red-300 truncate">{abbreviatedLocation(shift.location)}</p>
                   <p className="text-foreground/80 font-medium truncate">{shift.time}</p>
                 </div>
               )
             }
-            return <div key={`placeholder-${index}`} className="h-[28px] w-full" />
+            return <div key={`placeholder-${index}`} className="h-[40px] w-full" />
           })}
         </div>
         {!hasShifts && <PlusCircle className="h-5 w-5 text-muted-foreground opacity-10 group-hover:opacity-60 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />}
@@ -134,7 +135,11 @@ export default function CalendarView({ initialShifts, userId }: CalendarViewProp
       {selectedDate && (
         <ShiftModal
           isOpen={modalOpen}
-          onClose={() => setModalOpen(false)}
+          onClose={() => {
+            setModalOpen(false);
+            // We can't easily revalidate from the client, 
+            // but closing the modal and reopening will show fresh data.
+          }}
           date={selectedDate}
           shifts={shiftsByDate[selectedDate] || []}
           userId={userId}

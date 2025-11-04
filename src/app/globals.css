@@ -91,13 +91,13 @@ body {
 
 @layer utilities {
   .day-cell {
-    @apply min-h-[100px] transition-transform duration-100 ease-in-out bg-blue-100 dark:bg-blue-900/30 border;
+    @apply min-h-[120px] transition-transform duration-100 ease-in-out bg-blue-100 dark:bg-blue-900/30 border;
   }
   .day-cell:hover {
     @apply scale-[1.02] shadow-md;
   }
   .weekend-cell {
-    @apply bg-blue-200/60 dark:bg-blue-800/30;
+    @apply bg-blue-300/60 dark:bg-blue-700/40;
   }
   .day-cell.has-shifts {
     @apply bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800/30;
