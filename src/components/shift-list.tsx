@@ -99,6 +99,10 @@ export default function ShiftList({ shifts, userId, onActionSuccess }: ShiftList
                       {isOwner ? `Publicado por: ${shift.name} (Tú)` : `Publicado por: ${shift.name}`}
                     </span>
                 </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <Phone className="w-4 h-4"/>
+                    <span>{shift.phone}</span>
+                </div>
                 {shift.notes && (
                     <div className="flex items-start gap-2 text-muted-foreground pt-2">
                         <FileText className="w-4 h-4 mt-0.5 shrink-0"/>
