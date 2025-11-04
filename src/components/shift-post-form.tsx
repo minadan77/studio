@@ -24,7 +24,7 @@ import {
 import { addShiftAction } from '@/lib/actions';
 import { useFormStatus } from 'react-dom';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
+import { startTransition } from 'react';
 
 const MOCK_USER_ID = 'user_abc_123';
 
@@ -73,22 +73,24 @@ export default function ShiftPostForm({ selectedDate, onFormSubmitSuccess }: Shi
     },
   });
 
-  const action = async (formData: FormData) => {
-    const result = await addShiftAction(formData);
-    if (result?.error) {
-       toast({
-        title: 'Error al publicar',
-        description: result.error,
-        variant: 'destructive',
-      });
-    } else {
-      toast({
-        title: '¡Guardia Publicada!',
-        description: 'Tu guardia ha sido publicada correctamente.',
-      });
-      onFormSubmitSuccess();
-      form.reset();
-    }
+  const onSubmit = (values: ShiftFormValues) => {
+    startTransition(async () => {
+      const result = await addShiftAction(values);
+      if (result?.error) {
+        toast({
+          title: 'Error al publicar',
+          description: result.error,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: '¡Guardia Publicada!',
+          description: 'Tu guardia ha sido publicada correctamente.',
+        });
+        onFormSubmitSuccess();
+        form.reset();
+      }
+    });
   };
 
   return (
@@ -97,9 +99,7 @@ export default function ShiftPostForm({ selectedDate, onFormSubmitSuccess }: Shi
         Publicar mi guardia para cambiar
       </h4>
       <Form {...form}>
-        <form action={action} className="space-y-4">
-            <input type="hidden" name="date" value={selectedDate} />
-            <input type="hidden" name="userId" value={MOCK_USER_ID} />
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="name"

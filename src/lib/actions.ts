@@ -22,16 +22,8 @@ const FormSchema = z.object({
 
 const AddShiftSchema = FormSchema.omit({ id: true, createdAt: true });
 
-export async function addShiftAction(formData: FormData) {
-  const validatedFields = AddShiftSchema.safeParse({
-    name: formData.get('name'),
-    location: formData.get('location'),
-    time: formData.get('time'),
-    phone: formData.get('phone'),
-    notes: formData.get('notes'),
-    date: formData.get('date'),
-    userId: formData.get('userId'),
-  });
+export async function addShiftAction(data: z.infer<typeof AddShiftSchema>) {
+  const validatedFields = AddShiftSchema.safeParse(data);
 
   if (!validatedFields.success) {
     return {
