@@ -7,8 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react';
 import ShiftModal from './shift-modal';
 import { cn } from '@/lib/utils';
-import { onSnapshot, collection, query, orderBy } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { useShifts } from '@/firebase';
 
 interface CalendarViewProps {
   initialShifts: Shift[];
@@ -25,28 +24,15 @@ export default function CalendarView({ initialShifts, userId }: CalendarViewProp
   const [currentDate, setCurrentDate] = useState(new Date());
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [shifts, setShifts] = useState(initialShifts);
-
-  useEffect(() => {
-    const q = query(collection(db, 'shifts'), orderBy('createdAt', 'asc'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const shiftsFromDb = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt.toDate(),
-      })) as Shift[];
-      setShifts(shiftsFromDb);
-    });
-
-    return () => unsubscribe();
-  }, []);
+  const { shifts } = useShifts();
 
   const shiftsByDate = useMemo(() => {
-    return shifts.reduce((acc, shift) => {
+    const allShifts = shifts.length > 0 ? shifts : initialShifts;
+    return allShifts.reduce((acc, shift) => {
       (acc[shift.date] = acc[shift.date] || []).push(shift);
       return acc;
     }, {} as Record<string, Shift[]>);
-  }, [shifts]);
+  }, [shifts, initialShifts]);
 
   const monthNames = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',

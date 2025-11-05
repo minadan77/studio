@@ -29,5 +29,5 @@ if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
   // connectAuthEmulator(auth, 'http://localhost:9099');
 }
 
-export { FirebaseProvider } from './provider';
+export { FirebaseProvider, useShifts } from './provider';
 export { useUser } from './auth/use-user';

@@ -2,17 +2,15 @@
 
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import CalendarView from '@/components/calendar-view';
-import { getShifts } from '@/lib/data';
-import type { Shift } from '@/lib/definitions';
 import { Button } from '@/components/ui/button';
-import { auth } from '@/firebase';
+import { auth, useShifts } from '@/firebase';
 
 export default function Home() {
   const { user, loading } = useUser();
+  const { shifts, loading: shiftsLoading } = useShifts();
   const router = useRouter();
-  const [shifts, setShifts] = useState<Shift[]>([]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -20,17 +18,7 @@ export default function Home() {
     }
   }, [user, loading, router]);
   
-  useEffect(() => {
-    async function fetchShifts() {
-        if(user) {
-            const fetchedShifts = await getShifts();
-            setShifts(fetchedShifts);
-        }
-    }
-    fetchShifts();
-  }, [user]);
-
-  if (loading || !user) {
+  if (loading || shiftsLoading || !user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <p>Cargando...</p>
