@@ -22,8 +22,8 @@ import {
   initializeApp,
   getApps,
   getApp,
-  FirebaseApp,
-  FirebaseOptions,
+  type FirebaseApp,
+  type FirebaseOptions,
 } from 'firebase/app';
 
 // Esta configuración es pública y segura.
@@ -47,24 +47,22 @@ interface FirebaseContextValue {
 
 const FirebaseContext = createContext<FirebaseContextValue | null>(null);
 
-function initializeFirebase() {
-  if (getApps().length === 0) {
-    return initializeApp(firebaseConfig);
-  } else {
-    return getApp();
-  }
+let firebaseApp: FirebaseApp;
+if (getApps().length === 0) {
+  firebaseApp = initializeApp(firebaseConfig);
+} else {
+  firebaseApp = getApp();
 }
 
 export function FirebaseProvider({ children }: { children: ReactNode }) {
-  const [app, setApp] = useState<FirebaseApp | null>(null);
   const [auth, setAuth] = useState<Auth | null>(null);
   const [db, setDb] = useState<Firestore | null>(null);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    const firebaseApp = initializeFirebase();
-    setApp(firebaseApp);
+    setIsMounted(true);
     setAuth(getAuth(firebaseApp));
     setDb(getFirestore(firebaseApp));
   }, []);
@@ -96,14 +94,14 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
   }, [db]);
 
   const value = useMemo(() => {
-    if (app && db && auth) {
-      return { app, db, auth, shifts, loading };
+    if (db && auth) {
+      return { app: firebaseApp, db, auth, shifts, loading };
     }
     return null;
-  }, [app, db, auth, shifts, loading]);
+  }, [db, auth, shifts, loading]);
 
-  if (!value) {
-    // Muestra un estado de carga mientras Firebase se inicializa
+  if (!isMounted || !value) {
+    // Muestra un estado de carga mientras el componente se monta o Firebase se inicializa
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <p>Inicializando Firebase...</p>
