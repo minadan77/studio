@@ -7,11 +7,17 @@ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 // This function safely parses the config from the server environment variable.
 const getFirebaseConfig = (): FirebaseOptions => {
   try {
-    const config = process.env.NEXT_PUBLIC_FIREBASE_CONFIG;
-    if (!config) {
-      throw new Error("Firebase config not found in environment variables.");
+    // This is the config provided by App Hosting during deployment.
+    const config = process.env.FIREBASE_CONFIG;
+    if (config) {
+      return JSON.parse(config);
     }
-    return JSON.parse(config);
+    // This is the config provided for local development.
+    const webAppConfig = process.env.NEXT_PUBLIC_FIREBASE_CONFIG;
+     if (webAppConfig) {
+      return JSON.parse(webAppConfig);
+    }
+    throw new Error("Firebase config not found in environment variables.");
   } catch (error) {
     console.error("Error parsing Firebase config:", error);
     // Fallback to individual variables if the main one is not available
