@@ -8,23 +8,19 @@ import {
 } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { FirebaseProvider, useShifts } from './provider';
-import { useUser } from './auth/use-user';
 
 const getFirebaseConfig = (): FirebaseOptions => {
-  // For server-side rendering, the config is stringified and passed as an environment variable.
-  // This is the variable set by Firebase App Hosting.
-  if (process.env.FIREBASE_CONFIG) {
-    return JSON.parse(process.env.FIREBASE_CONFIG);
+  // This is the config provided for local development and client-side rendering.
+  const webAppConfig = process.env.NEXT_PUBLIC_FIREBASE_CONFIG;
+  if (webAppConfig) {
+    try {
+      return JSON.parse(webAppConfig);
+    } catch (e) {
+      console.error("Error parsing NEXT_PUBLIC_FIREBASE_CONFIG", e);
+    }
   }
 
-  // For client-side, the config is available on NEXT_PUBLIC_FIREBASE_CONFIG.
-  // This is set by Firebase Studio in the local development environment.
-  if (process.env.NEXT_PUBLIC_FIREBASE_CONFIG) {
-    return JSON.parse(process.env.NEXT_PUBLIC_FIREBASE_CONFIG);
-  }
-
-  // As a final fallback for other environments, try to build from individual variables.
+  // Fallback for other environments, trying to build from individual variables.
   const fallbackConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
     authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -38,16 +34,18 @@ const getFirebaseConfig = (): FirebaseOptions => {
     return fallbackConfig;
   }
 
-  throw new Error(
-    'Firebase configuration is not found. Check your environment variables.'
-  );
+  // During server-side build, these might not be available. We should not throw an error here.
+  // Instead, the server-side code should use its own initialization.
+  // Returning an empty object and letting initializeApp handle it.
+  return {};
 };
 
-// Initialize Firebase
+// Initialize Firebase for the client-side
 const app = !getApps().length ? initializeApp(getFirebaseConfig()) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// It's safe to connect to emulators here as this is a client file.
 if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
   // In a real app, you would want to connect to emulators here
   // import { connectAuthEmulator } from 'firebase/auth';
@@ -56,4 +54,4 @@ if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
   // connectFirestoreEmulator(db, 'localhost', 8080);
 }
 
-export { app, auth, db, FirebaseProvider, useShifts, useUser };
+export { app, auth, db };
