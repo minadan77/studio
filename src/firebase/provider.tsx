@@ -26,6 +26,17 @@ import {
   FirebaseOptions,
 } from 'firebase/app';
 
+// This is a hardcoded config object.
+// In a real-world scenario, this should be loaded from environment variables.
+const firebaseConfig: FirebaseOptions = {
+  apiKey: 'AIzaSyCCozUn2lAcvVM6VUmSFlnkLnLdP1jJVnU',
+  authDomain: 'studio-6792195927-50f25.firebaseapp.com',
+  projectId: 'studio-6792195927-50f25',
+  storageBucket: 'studio-6792195927-50f25.appspot.com',
+  messagingSenderId: '835504863875',
+  appId: '1:835504863875:web:240adbdea3fa388b57b9b6',
+};
+
 interface FirebaseContextValue {
   db: Firestore | null;
   auth: Auth | null;
@@ -43,23 +54,10 @@ const FirebaseContext = createContext<FirebaseContextValue>({
 });
 
 function initializeFirebase() {
-  const firebaseConfigString = process.env.NEXT_PUBLIC_FIREBASE_CONFIG;
-  if (!firebaseConfigString) {
-    console.error(
-      'Firebase config not found. Please check your environment variables.'
-    );
-    return null;
-  }
-  try {
-    const firebaseConfig: FirebaseOptions = JSON.parse(firebaseConfigString);
-    if (getApps().length === 0) {
-      return initializeApp(firebaseConfig);
-    } else {
-      return getApp();
-    }
-  } catch (e) {
-    console.error('Could not parse Firebase config:', e);
-    return null;
+  if (getApps().length === 0) {
+    return initializeApp(firebaseConfig);
+  } else {
+    return getApp();
   }
 }
 
@@ -77,13 +75,13 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
       setAuth(getAuth(firebaseApp));
       setDb(getFirestore(firebaseApp));
     } else {
-      setLoading(false); // Stop loading if Firebase fails to initialize
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     if (!db) {
-      if (app) setLoading(false); // If app tried to init but db failed.
+      if (app) setLoading(false);
       return;
     }
 
