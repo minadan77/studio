@@ -1,6 +1,6 @@
 'use client';
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { db } from '@/firebase';
+import { db } from '@/firebase/client';
 import { onSnapshot, collection, query, orderBy } from 'firebase/firestore';
 import type { Shift } from '@/lib/definitions';
 

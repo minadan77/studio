@@ -13,7 +13,11 @@ const getFirebaseConfig = (): FirebaseOptions => {
   // For server-side rendering in production, the config is stringified and passed as an environment variable.
   // This is the variable set by Firebase App Hosting.
   if (process.env.FIREBASE_CONFIG) {
-    return JSON.parse(process.env.FIREBASE_CONFIG);
+    try {
+      return JSON.parse(process.env.FIREBASE_CONFIG);
+    } catch (e) {
+      console.error('Error parsing FIREBASE_CONFIG', e);
+    }
   }
 
   // For client-side rendering and local development, the config is available on NEXT_PUBLIC_FIREBASE_CONFIG.
