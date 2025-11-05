@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Chrome } from 'lucide-react';
 import { useFirebase } from '@/firebase/provider';
+import { useToast } from '@/hooks/use-toast';
 
 function LoginButton() {
   const { auth } = useFirebase();
@@ -20,8 +21,12 @@ function LoginButton() {
       console.error('Auth service is not available.');
       return;
     }
-    const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithRedirect(auth, provider);
+    } catch (error) {
+      console.error('Error starting sign-in redirect:', error);
+    }
   };
 
   return (
@@ -33,11 +38,12 @@ function LoginButton() {
 }
 
 export default function LoginPage() {
-  const { user, loading } = useUser();
+  const { user, loading: userLoading } = useUser();
   const { auth } = useFirebase();
   const router = useRouter();
+  const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [processingRedirect, setProcessingRedirect] = useState(true);
 
   useEffect(() => {
     setIsClient(true);
@@ -45,46 +51,78 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!auth) return;
+
+    // This effect runs once on mount to check for a redirect result.
     getRedirectResult(auth)
       .then((result) => {
         if (result?.user) {
-          router.push('/');
+          // User successfully signed in via redirect.
+          // The useUser hook will handle the redirect to '/'.
         }
       })
       .catch((error) => {
-        console.error('Error getting redirect result', error);
+        console.error('Error getting redirect result:', error);
+        if (error.code === 'auth/unauthorized-domain') {
+          toast({
+            title: 'Error de Dominio',
+            description:
+              'El dominio no está autorizado. Por favor, añádelo en la configuración de Firebase Auth.',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Error de Inicio de Sesión',
+            description: 'Hubo un problema al iniciar sesión.',
+            variant: 'destructive',
+          });
+        }
       })
       .finally(() => {
-        // This combines redirect loading and initial auth state loading
-        setAuthLoading(loading);
+        setProcessingRedirect(false);
       });
-  }, [auth, router, loading]);
+  }, [auth, router, toast]);
 
   useEffect(() => {
-    if (!authLoading && user) {
+    // Redirect to home if user is already logged in and not loading.
+    if (!userLoading && !processingRedirect && user) {
       router.push('/');
     }
-  }, [user, authLoading, router]);
+  }, [user, userLoading, processingRedirect, router]);
 
-  const showLoading = authLoading || (!isClient && loading) || user;
+  const showLoading = userLoading || processingRedirect || !isClient;
 
+  if (showLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-primary mb-2">GuardiaSwap</h1>
+          <p className="text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Only show login button if not loading and no user is present
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-primary mb-2">GuardiaSwap</h1>
+          <p className="text-muted-foreground">Inicia sesión para continuar</p>
+        </div>
+        <LoginButton />
+      </div>
+    );
+  }
+
+  // If we are here, it means user is logged in, but the redirect effect hasn't fired yet.
+  // Show loading until the redirect happens.
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-primary mb-2">GuardiaSwap</h1>
-        {!showLoading && isClient && (
-          <p className="text-muted-foreground">Inicia sesión para continuar</p>
-        )}
-      </div>
-      {isClient && (
-        <>
-          {showLoading ? (
-            <div>Cargando...</div>
-          ) : (
-            <LoginButton />
-          )}
-        </>
-      )}
+       <div className="text-center">
+          <h1 className="text-4xl font-bold text-primary mb-2">GuardiaSwap</h1>
+          <p className="text-muted-foreground">Redirigiendo...</p>
+        </div>
     </div>
   );
 }
