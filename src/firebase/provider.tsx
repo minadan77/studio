@@ -47,9 +47,10 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const firebaseApp = useMemo(() => {
+    // This string is populated by App Hosting.
     const firebaseConfigString = process.env.NEXT_PUBLIC_FIREBASE_CONFIG;
     if (!firebaseConfigString) {
-      console.error('Firebase config string is not available in the browser.');
+      // Do not log error, as this can happen during build process
       return null;
     }
     const firebaseConfig: FirebaseOptions = JSON.parse(firebaseConfigString);
