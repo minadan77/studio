@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import CalendarView from '@/components/calendar-view';
 import { Button } from '@/components/ui/button';
-import { useShifts } from '@/firebase/provider';
-import { getFirebase } from '@/firebase/client';
+import { useShifts, useFirebase } from '@/firebase/provider';
+
 
 export default function Home() {
   const { user, loading } = useUser();
   const { shifts, loading: shiftsLoading } = useShifts();
+  const { auth } = useFirebase();
   const router = useRouter();
 
   useEffect(() => {
@@ -27,8 +28,6 @@ export default function Home() {
     );
   }
 
-  const { auth } = getFirebase();
-
   return (
     <div className="p-4 md:p-6 pb-20 bg-background min-h-screen">
       <header className="text-center mb-6 relative">
@@ -39,7 +38,7 @@ export default function Home() {
           Toca un día para ver o publicar una guardia.
         </p>
         <div className="absolute top-0 right-0">
-          <Button variant="outline" onClick={() => auth.signOut()}>Cerrar Sesión</Button>
+          <Button variant="outline" onClick={() => auth?.signOut()}>Cerrar Sesión</Button>
         </div>
       </header>
       <main className="max-w-4xl mx-auto">

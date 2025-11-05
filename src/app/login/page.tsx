@@ -1,18 +1,22 @@
 'use client';
 
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { getFirebase } from '@/firebase/client';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/firebase/auth/use-user';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Chrome } from 'lucide-react';
+import { useFirebase } from '@/firebase/provider';
 
 function LoginButton() {
   const router = useRouter();
+  const { auth } = useFirebase();
 
   const handleSignIn = async () => {
-    const { auth } = getFirebase();
+    if (!auth) {
+      console.error("Auth service is not available.");
+      return;
+    }
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
