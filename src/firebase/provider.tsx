@@ -6,6 +6,26 @@ import { initializeApp, getApps, getApp, FirebaseApp, FirebaseOptions } from 'fi
 import { Auth, getAuth } from 'firebase/auth';
 import type { Shift } from '@/lib/definitions';
 
+// This function will be replaced by the actual config during the build process
+const getFirebaseConfig = (): FirebaseOptions => {
+  const firebaseConfigString = process.env.NEXT_PUBLIC_FIREBASE_CONFIG;
+  if (!firebaseConfigString) {
+    // This console.error is for client-side debugging, it will not run on the server.
+    console.error("Firebase config string is not available in the browser.");
+    // Return a dummy config to prevent crashing, though Firebase will not work.
+    return {
+      apiKey: "dummy-key",
+      authDomain: "dummy-domain.firebaseapp.com",
+      projectId: "dummy-project",
+      storageBucket: "dummy-project.appspot.com",
+      messagingSenderId: "dummy-sender-id",
+      appId: "dummy-app-id",
+    };
+  }
+  return JSON.parse(firebaseConfigString);
+};
+
+
 interface FirebaseContextValue {
   db: Firestore | null;
   auth: Auth | null;
@@ -27,20 +47,15 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const firebaseApp = useMemo(() => {
-    const firebaseConfigString = process.env.NEXT_PUBLIC_FIREBASE_CONFIG;
-    if (!firebaseConfigString) {
-      console.error("Firebase config string is not available.");
+    const config = getFirebaseConfig();
+    if (!config.projectId || config.projectId === 'dummy-project') {
       return null;
     }
-    const firebaseConfig: FirebaseOptions = JSON.parse(firebaseConfigString);
-    if (getApps().length === 0) {
-      return initializeApp(firebaseConfig);
-    }
-    return getApp();
+    return getApps().length === 0 ? initializeApp(config) : getApp();
   }, []);
 
-  const db = firebaseApp ? getFirestore(firebaseApp) : null;
-  const auth = firebaseApp ? getAuth(firebaseApp) : null;
+  const db = useMemo(() => (firebaseApp ? getFirestore(firebaseApp) : null), [firebaseApp]);
+  const auth = useMemo(() => (firebaseApp ? getAuth(firebaseApp) : null), [firebaseApp]);
 
   useEffect(() => {
     if (!db) {
