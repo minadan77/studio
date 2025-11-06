@@ -1,25 +1,31 @@
 'use client';
 
-import { useUser } from '@/firebase/auth/use-user';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import CalendarView from '@/components/calendar-view';
 import { Button } from '@/components/ui/button';
-import { useShifts, useFirebase } from '@/firebase/provider';
+import { useShifts } from '@/firebase/provider';
 
 export default function Home() {
-  const { user, loading } = useUser();
   const { shifts, loading: shiftsLoading } = useShifts();
-  const { auth } = useFirebase();
   const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
+    const accessGranted = sessionStorage.getItem('app-access-granted') === 'true';
+    if (!accessGranted) {
       router.push('/login');
+    } else {
+      setIsAuthenticated(true);
     }
-  }, [user, loading, router]);
+  }, [router]);
 
-  if (loading || shiftsLoading || !user) {
+  const handleLogout = () => {
+    sessionStorage.removeItem('app-access-granted');
+    router.push('/login');
+  };
+
+  if (shiftsLoading || !isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <p>Cargando...</p>
@@ -37,13 +43,13 @@ export default function Home() {
           Toca un día para ver o publicar una guardia.
         </p>
         <div className="absolute top-0 right-0">
-          <Button variant="outline" onClick={() => auth?.signOut()}>
-            Cerrar Sesión
+          <Button variant="outline" onClick={handleLogout}>
+            Salir
           </Button>
         </div>
       </header>
       <main className="max-w-4xl mx-auto">
-        <CalendarView initialShifts={shifts} userId={user.uid} />
+        <CalendarView initialShifts={shifts} userId="shared-user" />
       </main>
     </div>
   );
